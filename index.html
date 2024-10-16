@@ -10,12 +10,14 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
             background-color: #f0f0f0;
         }
         .container {
             text-align: center;
+            max-width: 600px;
+            padding: 20px;
         }
         h1 {
             color: #333;
@@ -41,13 +43,26 @@
             margin-top: 20px;
             font-style: italic;
         }
+        #catImage {
+            max-width: 100%;
+            height: auto;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        #loadingMessage {
+            font-style: italic;
+            color: #666;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>¿Te gustan los gatos?</h1>
-        <button id="siButton" class="button">Sí</button>
-        <button id="noButton" class="button">No</button>
+        <div id="loadingMessage">Cargando imagen de gato...</div>
+        <img id="catImage" src="" alt="Imagen de gato" style="display: none;">
+        <button id="siButton" class="button" style="display: none;">Sí</button>
+        <button id="noButton" class="button" style="display: none;">No</button>
         <p id="mensaje"></p>
     </div>
 
@@ -55,6 +70,8 @@
         const siButton = document.getElementById('siButton');
         const noButton = document.getElementById('noButton');
         const mensaje = document.getElementById('mensaje');
+        const catImage = document.getElementById('catImage');
+        const loadingMessage = document.getElementById('loadingMessage');
         let intentos = 0;
 
         function intercambiarTextoYColor() {
@@ -68,17 +85,40 @@
             noButton.style.backgroundColor = tempColor;
         }
 
+        function cargarImagenDeCato() {
+            fetch('https://api.thecatapi.com/v1/images/search')
+                .then(response => response.json())
+                .then(data => {
+                    catImage.src = data[0].url;
+                    catImage.onload = () => {
+                        loadingMessage.style.display = 'none';
+                        catImage.style.display = 'block';
+                        siButton.style.display = 'inline-block';
+                        noButton.style.display = 'inline-block';
+                    };
+                })
+                .catch(error => {
+                    console.error('Error al cargar la imagen:', error);
+                    loadingMessage.textContent = 'Error al cargar la imagen. Por favor, recarga la página.';
+                });
+        }
+
         siButton.addEventListener('mouseover', intercambiarTextoYColor);
         siButton.addEventListener('mouseout', intercambiarTextoYColor);
         siButton.addEventListener('click', () => {
             intentos++;
             mensaje.textContent = `Has seleccionado que no te gustan los gatos. Llevas ${intentos} intento(s). ¡Sigue intentando!`;
             intercambiarTextoYColor();
+            cargarImagenDeCato();
         });
 
         noButton.addEventListener('click', () => {
             mensaje.textContent = '¡Gracias por tu honestidad!';
+            cargarImagenDeCato();
         });
+
+        // Cargar la primera imagen al iniciar la página
+        cargarImagenDeCato();
     </script>
 </body>
 </html>
