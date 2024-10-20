@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>¿Te casarias comigo?</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            text-align: center;
+            max-width: 600px;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        .button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin: 10px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        #siButton {
+            background-color: #4CAF50;
+            color: white;
+        }
+        #noButton {
+            background-color: #f44336;
+            color: white;
+        }
+        #mensaje {
+            margin-top: 20px;
+            font-style: italic;
+        }
+        #catImage {
+            max-width: 100%;
+            height: auto;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        #loadingMessage {
+            font-style: italic;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>¿Te gustan los gatos?</h1>
+        <div id="loadingMessage">Cargando imagen de gato...</div>
+        <img id="catImage" src="" alt="Imagen de gato" style="display: none;">
+        <button id="siButton" class="button" style="display: none;">Sí</button>
+        <button id="noButton" class="button" style="display: none;">No</button>
+        <p id="mensaje"></p>
+    </div>
+
+    <script>
+        const siButton = document.getElementById('siButton');
+        const noButton = document.getElementById('noButton');
+        const mensaje = document.getElementById('mensaje');
+        const catImage = document.getElementById('catImage');
+        const loadingMessage = document.getElementById('loadingMessage');
+        let intentos = 0;
+
+        function intercambiarTextoYColor() {
+            const tempText = siButton.textContent;
+            const tempColor = window.getComputedStyle(siButton).backgroundColor;
+            
+            siButton.textContent = noButton.textContent;
+            siButton.style.backgroundColor = window.getComputedStyle(noButton).backgroundColor;
+            
+            noButton.textContent = tempText;
+            noButton.style.backgroundColor = tempColor;
+        }
+
+        function cargarImagenDeCato() {
+            fetch('https://api.thecatapi.com/v1/images/search')
+                .then(response => response.json())
+                .then(data => {
+                    catImage.src = data[0].url;
+                    catImage.onload = () => {
+                        loadingMessage.style.display = 'none';
+                        catImage.style.display = 'block';
+                        siButton.style.display = 'inline-block';
+                        noButton.style.display = 'inline-block';
+                    };
+                })
+                .catch(error => {
+                    console.error('Error al cargar la imagen:', error);
+                    loadingMessage.textContent = 'Error al cargar la imagen. Por favor, recarga la página.';
+                });
+        }
+
+        siButton.addEventListener('mouseover', intercambiarTextoYColor);
+        siButton.addEventListener('mouseout', intercambiarTextoYColor);
+        siButton.addEventListener('click', () => {
+            intentos++;
+            mensaje.textContent = `Has seleccionado que no te gustan los gatos. Llevas ${intentos} intento(s). ¡Sigue intentando!`;
+            intercambiarTextoYColor();
+            cargarImagenDeCato();
+        });
+
+        noButton.addEventListener('click', () => {
+            mensaje.textContent = '¡Gracias por tu honestidad!';
+            cargarImagenDeCato();
+        });
+
+        // Cargar la primera imagen al iniciar la página
+        cargarImagenDeCato();
+    </script>
+</body>
+</html>
